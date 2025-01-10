@@ -6,10 +6,13 @@ from pyvis.network import Network
 import tempfile
 
 
-# Connexion à la base de données Neo4j
-uri = "bolt://localhost:7687"
-username = "neo4j"
-password = os.getenv("NEO4J_PASSWORD", "Gabardiop")  # Utilisation d'une variable d'environnement pour le mot de passe
+from neo4j import GraphDatabase
+import os
+
+# Connexion à Neo4j Aura
+uri = "neo4j+s://19ede69b.databases.neo4j.io"  # Utilisez l'URI fourni
+username = "neo4j"  # Nom d'utilisateur
+password = "rFzyDyAC0ayPT8nqLY-AFOnMRlYzwX_jtnAwk_JE19g"  # Mot de passe
 
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
