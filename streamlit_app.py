@@ -4,14 +4,14 @@ import os
 import re
 from pyvis.network import Network
 import tempfile
+import requests  # Pour envoyer des requêtes HTTP à Formspree
 
-# Connexion à Neo4j Aura
-uri = "neo4j+s://19ede69b.databases.neo4j.io"  # Utilisez l'URI fourni
-username = "neo4j"  # Nom d'utilisateur
-password = "rFzyDyAC0ayPT8nqLY-AFOnMRlYzwX_jtnAwk_JE19g"  # Mot de passe
+# Connexion à la base de données Neo4j
+uri = "bolt://localhost:7687"
+username = "neo4j"
+password = os.getenv("NEO4J_PASSWORD", "Gabardiop")  # Utilisation d'une variable d'environnement pour le mot de passe
 
 driver = GraphDatabase.driver(uri, auth=(username, password))
-
 
 # Fonctions pour interagir avec Neo4j
 def clean_name(name):
@@ -136,6 +136,74 @@ def visualize_graph(nodes, relationships, highlight_node=None):
     # Afficher le graph dans Streamlit
     st.components.v1.html(html_content, height=800)  # Hauteur augmentée
 
+# Fonction pour envoyer un message via Formspree
+def send_via_formspree(name, email, message):
+    """
+    Envoie les données du formulaire à Formspree.
+    """
+    formspree_url = "https://formspree.io/f/mpwwkpvd"  # Votre endpoint Formspree
+    data = {
+        "name": name,
+        "email": email,
+        "message": message,
+    }
+    try:
+        response = requests.post(formspree_url, data=data)
+        if response.status_code == 200:
+            st.success("Votre message a été envoyé avec succès !")
+        else:
+            st.error(f"Erreur lors de l'envoi du message : {response.status_code}")
+    except Exception as e:
+        st.error(f"Erreur lors de l'envoi du message : {e}")
+
+# Styles CSS pour améliorer l'apparence
+st.markdown(
+    """
+    <style>
+    /* Titre principal */
+    h1 {
+        font-size: 36px !important;
+        text-align: center;
+    }
+
+    /* Cases de saisie */
+    .stTextInput input {
+        font-size: 20px !important;
+        padding: 10px !important;
+    }
+
+    /* Boutons */
+    .stButton button {
+        font-size: 20px !important;
+        padding: 10px 20px !important;
+        background-color: #2E86C1 !important;
+        color: white !important;
+        border-radius: 5px !important;
+    }
+
+    /* Texte */
+    .stMarkdown {
+        font-size: 20px !important;
+    }
+
+    /* Suggestions */
+    .stMarkdown p {
+        font-size: 18px !important;
+        color: #2E86C1 !important;
+    }
+
+    /* Graphique */
+    .stComponents iframe {
+        width: 100% !important;
+        height: 900px !important;
+    }
+
+
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 # Interface utilisateur Streamlit
 st.title("Exploration Généalogique avec Neo4j")
 
@@ -210,11 +278,27 @@ elif search_type == "Relation entre deux personnes":
         else:
             st.write("Veuillez entrer les noms des deux personnes.")
 
+# Formulaire de contact avec Formspree
 st.write("---")
-st.markdown("""
-    **Application développée par [Ibrahima Gabar Diop](https://portfolio-igd.onrender.com/) avec :**
-    - [Streamlit](https://streamlit.io)
-    - [Python3](https://Python.com)
-    - [Neo4j](https://Neo4j.com)  
-    - [pyvis](https://pyvis.com)
-    """)
+st.header("Contactez-moi")
+st.write("Pour des feedbacks, des contributions, des suggestions ou des demandes, veuillez remplir le formulaire ci-dessous.")
+
+with st.form("contact_form"):
+    name = st.text_input("Nom complet", key="name")
+    email = st.text_input("Email", key="email")
+    message = st.text_area("Message", key="message")
+    submit_button = st.form_submit_button("Envoyer")
+
+    if submit_button:
+        if name and email and message:
+            send_via_formspree(name, email, message)
+        else:
+            st.warning("Veuillez remplir tous les champs du formulaire.")
+
+# Informations de contact
+st.write("---")
+st.header("Informations de contact")
+st.write("📧 Adresse e-mail : gabardiop1@outlook.com")
+st.write("📞 Téléphone : +221775778507")
+st.write("🌐 Portfolio : [Visitez mon portfolio](https://portfolio-igd.onrender.com/)")
+st.write("🔗 LinkdIn :(https://www.linkedin.com/in/ibrahima-gabar-diop-730537237/)")
