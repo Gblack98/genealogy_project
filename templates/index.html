@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arbre Généalogique Interactif</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .family-tree-container img {
+            width: 100%; /* Assure que l'image prend tout l'espace disponible */
+            border: 2px solid #0b5394;
+            border-radius: 15px; /* Coins arrondis */
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2); /* Ombre douce pour un effet de profondeur */
+            transition: transform 0.3s ease; /* Animation pour le zoom */
+        }
+    
+        .family-tree-container img:hover {
+            transform: scale(1.03); /* Léger zoom au survol */
+        }
+        
+        .container-title {
+            font-size: 24px;
+            color: #073763;
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+    
+</head>
+<body>
+    <header>
+        <div class="logo">Mon Arbre Généalogique</div>
+        <nav>
+            <ul>
+                <li><a href="#">Accueil</a></li>
+                <li><a href="#">À propos</a></li>
+                <li><a href="#">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h1>Visualisation de l'Arbre Généalogique</h1>
+
+        <!-- Barre de recherche -->
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Rechercher une personne..." aria-label="Rechercher une personne">
+            <button onclick="searchPerson()">Rechercher</button>
+        </div>
+        
+
+        <!-- Sections pour chaque famille -->
+        {% set family_data = [
+            {"title": "Famille Asta Madièye", "img": family_tree_img_base64_Base1},
+            {"title": "Famille Sakoki", "img": family_tree_img_base64_Base2},
+            {"title": "Descendance fraternité William Diouf & Edmond Diouf", "img": family_tree_img_base64_Base3},
+            {"title": "Descendance Fatou Diallo", "img": family_tree_img_base64_Base4},
+            {"title": "Descendance Ndiogou Seck", "img": family_tree_img_base64_Base5},
+            {"title": "Descendance Mar Seck & Marème Ndiaye", "img": family_tree_img_base64_Base6},
+            {"title": "Descendance Mar Seck & Marème Ndiaye suite(1)", "img": family_tree_img_base64_Base7},
+            {"title": "Descendance Mar Seck & Marème Ndiaye suite(2)", "img": family_tree_img_base64_Base8},
+            {"title": "Descendance Fa Gaye & Nar Gaye", "img": family_tree_img_base64_Base9}
+
+        ] %}
+
+        {% for family in family_data %}
+            <h2>{{ family.title }}</h2>
+            <div class="img-container">
+                <img src="data:image/png;base64,{{ family.img }}" alt="{{ family.title }}">
+            </div>
+        {% endfor %}
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Mon Arbre Généalogique | Ibrahima Gabar Diop | Tous droits réservés</p>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+</body>
+</html>

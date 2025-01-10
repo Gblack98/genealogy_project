@@ -1,0 +1,26 @@
+# Fichiers Python temporaires
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.py.class
+
+# Environnements virtuels
+venv/
+env/
+
+# Fichiers de configuration sensibles
+.env
+*.env
+secrets.json
+
+# Fichiers de données temporaires
+data/temp/
+*.tmp
+*.log
+
+# Fichiers spécifiques à Streamlit
+.streamlit/
+
+# Fichiers spécifiques à Neo4j
+neo4j_data/
