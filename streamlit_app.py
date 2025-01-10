@@ -5,10 +5,12 @@ import re
 from pyvis.network import Network
 import tempfile
 
+
 # Connexion à la base de données Neo4j
-uri = "neo4j+s://19ede69b.databases.neo4j.io"
+uri = "bolt://localhost:7687"
 username = "neo4j"
-password = os.getenv("NEO4J_PASSWORD", "rFzyDyAC0ayPT8nqLY-AFOnMRlYzwX_jtnAwk_JE19g")
+password = os.getenv("NEO4J_PASSWORD", "Gabardiop")  # Utilisation d'une variable d'environnement pour le mot de passe
+
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
 # Fonctions pour interagir avec Neo4j
@@ -92,7 +94,6 @@ def visualize_graph(nodes, relationships, highlight_node=None):
     :param highlight_node: Le nœud à mettre en évidence (couleur différente).
     """
     net = Network(notebook=True, width="100%", height="600px", directed=True)
-
     # Ajout des nœuds
     node_ids = set()  # Pour garder une trace des nœuds ajoutés
     for node in nodes:
@@ -200,3 +201,13 @@ elif search_type == "Relation entre deux personnes":
                 st.write("Aucune relation trouvée entre ces deux personnes.")
         else:
             st.write("Veuillez entrer les noms des deux personnes.")
+            
+
+st.write("---")
+st.markdown("""
+    **Application développée par [Ibrahima Gabar Diop](https://portfolio-igd.onrender.com/) avec :**
+    - [Streamlit](https://streamlit.io)
+    - [Python3](https://Python.com)
+    - [Neo4j](https://Neo4j.com)  
+    - [pyvis](https://pyvis.com)
+    """)            
