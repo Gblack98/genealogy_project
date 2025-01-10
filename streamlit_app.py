@@ -5,16 +5,13 @@ import re
 from pyvis.network import Network
 import tempfile
 
-
-from neo4j import GraphDatabase
-import os
-
 # Connexion à Neo4j Aura
 uri = "neo4j+s://19ede69b.databases.neo4j.io"  # Utilisez l'URI fourni
 username = "neo4j"  # Nom d'utilisateur
 password = "rFzyDyAC0ayPT8nqLY-AFOnMRlYzwX_jtnAwk_JE19g"  # Mot de passe
 
 driver = GraphDatabase.driver(uri, auth=(username, password))
+
 
 # Fonctions pour interagir avec Neo4j
 def clean_name(name):
@@ -43,31 +40,41 @@ def get_suggestions(partial_name):
 
 def find_ancestors(person):
     """
-    Trouve tous les ancêtres d'une personne.
+    Trouve tous les ancêtres d'une personne et retourne les nœuds et les relations.
     """
     person = clean_name(person)
     with driver.session() as session:
         query = """
-        MATCH (a:Person)-[:PARENT_DE*]->(p:Person)
+        MATCH path = (a:Person)-[:PARENT_DE*]->(p:Person)
         WHERE toLower(p.nom_complet) = toLower($person)
-        RETURN a.nom_complet AS Ancêtre
+        RETURN nodes(path) AS nodes, relationships(path) AS relationships
         """
         result = session.run(query, person=person)
-        return [record["Ancêtre"] for record in result]
+        nodes = set()
+        relationships = set()
+        for record in result:
+            nodes.update(record["nodes"])
+            relationships.update(record["relationships"])
+        return list(nodes), list(relationships)
 
 def find_descendants(person):
     """
-    Trouve tous les descendants d'une personne.
+    Trouve tous les descendants d'une personne et retourne les nœuds et les relations.
     """
     person = clean_name(person)
     with driver.session() as session:
         query = """
-        MATCH (p:Person)-[:PARENT_DE*]->(d:Person)
+        MATCH path = (p:Person)-[:PARENT_DE*]->(d:Person)
         WHERE toLower(p.nom_complet) = toLower($person)
-        RETURN d.nom_complet AS Descendant
+        RETURN nodes(path) AS nodes, relationships(path) AS relationships
         """
         result = session.run(query, person=person)
-        return [record["Descendant"] for record in result]
+        nodes = set()
+        relationships = set()
+        for record in result:
+            nodes.update(record["nodes"])
+            relationships.update(record["relationships"])
+        return list(nodes), list(relationships)
 
 def find_relationship(person1, person2):
     """
@@ -96,7 +103,7 @@ def visualize_graph(nodes, relationships, highlight_node=None):
     :param relationships: Liste des relations à afficher.
     :param highlight_node: Le nœud à mettre en évidence (couleur différente).
     """
-    net = Network(notebook=True, width="100%", height="600px", directed=True)
+    net = Network(notebook=True, width="1200px", height="800px", directed=True)  # Dimensions augmentées
     # Ajout des nœuds
     node_ids = set()  # Pour garder une trace des nœuds ajoutés
     for node in nodes:
@@ -106,9 +113,9 @@ def visualize_graph(nodes, relationships, highlight_node=None):
             node_ids.add(node_id)  # Ajouter l'identifiant à l'ensemble
             # Mettre en évidence le nœud spécifié
             if highlight_node and node_id.lower() == highlight_node.lower():
-                net.add_node(node_id, label=node_label, color="red")  # Couleur rouge pour le nœud mis en évidence
+                net.add_node(node_id, label=node_label, color="red", size=30)  # Taille et couleur pour le nœud mis en évidence
             else:
-                net.add_node(node_id, label=node_label, color="lightblue")  # Couleur par défaut
+                net.add_node(node_id, label=node_label, color="lightblue", size=20)  # Taille et couleur par défaut
 
     # Ajout des relations
     for relationship in relationships:
@@ -117,7 +124,7 @@ def visualize_graph(nodes, relationships, highlight_node=None):
             end_person = relationship.end_node["nom_complet"]
             # Vérifier que les deux nœuds existent dans le graphe
             if start_person in node_ids and end_person in node_ids:
-                net.add_edge(start_person, end_person, title=relationship.type)
+                net.add_edge(start_person, end_person, title=relationship.type, width=2)  # Épaisseur des relations augmentée
             else:
                 st.warning(f"Relation ignorée : {start_person} -> {end_person} (nœud manquant)")
         else:
@@ -127,7 +134,7 @@ def visualize_graph(nodes, relationships, highlight_node=None):
     html_content = net.generate_html()
 
     # Afficher le graph dans Streamlit
-    st.components.v1.html(html_content, height=600)
+    st.components.v1.html(html_content, height=800)  # Hauteur augmentée
 
 # Interface utilisateur Streamlit
 st.title("Exploration Généalogique avec Neo4j")
@@ -149,11 +156,10 @@ if search_type == "Ancêtres":
     
     if st.button("Rechercher les ancêtres"):
         if person_input:
-            ancestors = find_ancestors(person_input)
-            if ancestors:
+            nodes, relationships = find_ancestors(person_input)
+            if nodes:
                 st.write(f"Les ancêtres de {person_input} sont :")
-                for ancestor in ancestors:
-                    st.write(f"- {ancestor}")
+                visualize_graph(nodes, relationships, highlight_node=person_input)
             else:
                 st.write(f"Aucun ancêtre trouvé pour {person_input}.")
         else:
@@ -168,11 +174,10 @@ elif search_type == "Descendants":
     
     if st.button("Rechercher les descendants"):
         if person_input:
-            descendants = find_descendants(person_input)
-            if descendants:
+            nodes, relationships = find_descendants(person_input)
+            if nodes:
                 st.write(f"Les descendants de {person_input} sont :")
-                for descendant in descendants:
-                    st.write(f"- {descendant}")
+                visualize_graph(nodes, relationships, highlight_node=person_input)
             else:
                 st.write(f"Aucun descendant trouvé pour {person_input}.")
         else:
@@ -204,7 +209,6 @@ elif search_type == "Relation entre deux personnes":
                 st.write("Aucune relation trouvée entre ces deux personnes.")
         else:
             st.write("Veuillez entrer les noms des deux personnes.")
-            
 
 st.write("---")
 st.markdown("""
@@ -213,4 +217,4 @@ st.markdown("""
     - [Python3](https://Python.com)
     - [Neo4j](https://Neo4j.com)  
     - [pyvis](https://pyvis.com)
-    """)            
+    """)
