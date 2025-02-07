@@ -24,3 +24,7 @@ data/temp/
 
 # Fichiers spécifiques à Neo4j
 neo4j_data/
+
+#Secrets
+.streamlit/secrets.toml
+

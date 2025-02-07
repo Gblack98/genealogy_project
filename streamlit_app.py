@@ -1,16 +1,13 @@
 import streamlit as st
 from neo4j import GraphDatabase
-import os
 import re
 from pyvis.network import Network
-import tempfile
-import requests  # Pour envoyer des requêtes HTTP à Formspree
+import requests
 
-# Connexion à Neo4j Aura
-uri = "neo4j+s://19ede69b.databases.neo4j.io"  # Utilisez l'URI fourni
-username = "neo4j"  # Nom d'utilisateur
-password = "rFzyDyAC0ayPT8nqLY-AFOnMRlYzwX_jtnAwk_JE19g"  # Mot de passe
-
+# Connexion à Neo4j Aura en utilisant st.secrets pour sécuriser les identifiants
+uri = st.secrets["neo4j"]["uri"] 
+username = st.secrets["neo4j"]["username"] 
+password = st.secrets["neo4j"]["password"] 
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
 # Fonctions pour interagir avec Neo4j
@@ -136,12 +133,12 @@ def visualize_graph(nodes, relationships, highlight_node=None):
     # Afficher le graph dans Streamlit
     st.components.v1.html(html_content, height=800)  # Hauteur augmentée
 
-# Fonction pour envoyer un message via Formspree
+# Fonction pour envoyer un message via Formspree en utilisant st.secrets pour sécuriser l'endpoint
 def send_via_formspree(name, email, message):
     """
     Envoie les données du formulaire à Formspree.
     """
-    formspree_url = "https://formspree.io/f/mpwwkpvd"  # Votre endpoint Formspree
+    formspree_url = st.secrets["formspree"]["url"]  # Utilisation de st.secrets pour l'URL sécurisée
     data = {
         "name": name,
         "email": email,
@@ -197,8 +194,6 @@ st.markdown(
         width: 100% !important;
         height: 900px !important;
     }
-
-
     </style>
     """,
     unsafe_allow_html=True,
