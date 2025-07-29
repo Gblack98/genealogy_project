@@ -6,8 +6,8 @@ import requests
 
 # Connexion à Neo4j Aura en utilisant st.secrets pour sécuriser les identifiants
 uri = st.secrets["neo4j"]["uri"] 
-username = st.secrets["neo4j"]["username"] 
-password = st.secrets["neo4j"]["password"] 
+username = st.secrets["neo4j"]["ton_username_à_toi"] 
+password = st.secrets["neo4j"]["ton_password_à_toi"] 
 driver = GraphDatabase.driver(uri, auth=(username, password))
 
 # Fonctions pour interagir avec Neo4j
